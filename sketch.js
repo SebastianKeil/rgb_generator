@@ -1,118 +1,146 @@
-let electrons = [];
-let atoms = [];
-let electrodes;
-let volt;
-let temp;
-let shooting = false;
+//this is a generator of nice color themes. it generates a new theme by clicking and shows the rgb values for both colors.
+
+let r;
+let g;
+let b;
+let c1;
+let c2;
+let c3;
+let strokeBotton = true;
+var angle = 0;
+var branches;
 
 function setup() {
-  
   createCanvas(windowWidth, windowHeight);
-  textSize(30);
-  textAlign(RIGHT);
+  branches = createSlider(1, 100, 30, 10);
+  branches.position(100, 100);
   
-  volt = createSlider(0,10, 1, 0.5);
-  volt.position(50, 50);
-  temp = createSlider(20, 400, 200, 1);
-  temp.position(250, 50);
-  
-  //build the atom grid
-  for(let i = 0; i < 8; i++){
-    for(let j = 0; j < 5; j++){
-      atoms.push(new Atom(width/7 + i*70, height/4 + j*70));
-    }
-  }
-  
-  //build the electrodes
-  electrodes = new Electrodes();
-  
-  //start one electron
-  electrons.push(new Electron(50, height/2 + random(-100, 100)));
+  r = random(0,255);
+  g = random(0,255);
+  b = random(0,255);
 }
 
-//_/_/_/_/_/_/_/_/_/---DRAW---_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 function draw() {
-  heat_col = map(temp.value(), 20, 400, 190, 255);
-  background(heat_col, 190, 190);
-  showBottom();
+  c1 = color(r, g, b);
+  c2 = color(g, b, r);
+  c3 = color(255-r, 255-g, 255-b);
   
+//sky
+  background(c2);
   
-  //electrodes charge, force all electrons and show up
-  if(shooting){
-    electrodes.charge(3, electrons);
-  }
-  electrodes.applyForceTo(electrons);
-  electrodes.show();
+//sun 
+  /*
+  let r_sun = map(mouseY, 0, height, 250, 200);
+  let g_sun = map(mouseY, 0, height/2 + 100, 250, 160);
+  let b_sun = map(mouseY, 0, height/2 + 100, 250, 160);
   
-  //all atoms attract all electrons and show up
-  for(let a of atoms){
-    //a.checkCharge();
-    a.applyForceTo(electrons);
-    a.move();
-    a.show();
-  }
-  
-  //all electrons move and show up
-  for(let i = 0; i < electrons.length; i++){
-    electrons[i].move();
-    electrons[i].show();
-  }
-  //not too many electrons at once
-  //cleanElectrons();
-  
-  //print("amount electrons: " + electrons.length);
-  
-}
-
-function showBottom(){
-  textSize(20);
-  textAlign(RIGHT);
-  text('U in Volt', 160, 50);
-  text('0                 10', 180, 90);
-  text('Temp in K', 360, 50);
-  text('0                 400', 390, 90);
-  text('Ampere', 650, 70);
-  
+  fill(r_sun, g_sun, b_sun);
+  */
   noStroke();
-  if(shooting){
-    fill(0);
-    textSize(20);
-    text('ON', 463, 58);
-    fill(250, 250, 20, 100);
-  }else{
-    fill(0);
-    text('OFF', 468, 58);
-    fill(250, 250, 20, 70);
-  }
-  circle(450, 50, 50);
+  fill(250);
+  ellipse(mouseX, mouseY, 250);
   
-  circle(520, 50, 50);
-  fill(0);
-  textSize(14);
-  text('CLEAR', 543, 55);
-}
-
-function cleanElectrons(){
-  let max_elec_amount = map(volt.value(), 0, 10, 0, 400);
-  if(electrons.length > max_elec_amount){
-    electrons.splice(0, 1);
+  
+  
+//land
+  fill(c1);
+  rect(0, height/2 + 100, width, height - height/2 + 100);
+  noStroke();
+  ellipse(width/2+260, height/2 + 240, 500);
+  ellipse(width/2+570, height/2 + 200, 700);
+  
+  translate(0, 250);
+  
+//shadow
+  mouse_vec = createVector(mouseX, mouseY);
+  let pole_vec = createVector(575, 500);
+  let v = p5.Vector.sub(mouse_vec, pole_vec);
+  
+  
+  let shadow = p5.Vector.add(pole_vec, v.mult(-1));
+  //shadow.setMag(1);
+  
+  stroke(g-20, b-20, r-20);
+  strokeWeight(45);
+  line(pole_vec.x, pole_vec.y, shadow.x-70, shadow.y+300);
+  line(pole_vec.x, pole_vec.y, shadow.x-40, shadow.y+300);
+  line(pole_vec.x, pole_vec.y, shadow.x, shadow.y+300);
+  line(pole_vec.x, pole_vec.y, shadow.x+40, shadow.y+300);
+  line(pole_vec.x, pole_vec.y, shadow.x+70, shadow.y+300);
+  
+//pole
+  noStroke();
+  //stroke(0);
+  //strokeWeight(2);
+  fill(c3);
+  rect(70, 50, 550, 30, 20);
+  rect(550, 50, 50, 450, 20);
+  
+//textboxes
+  stroke(0);
+  strokeWeight(2);
+  fill(g + 50, b + 50, r + 50, 200);
+  rect(100, 210, 160, 160);
+  
+  textSize(40);
+  stroke(0);
+  strokeWeight(5);
+  fill(250);
+  text('R: ' + round(g), 110, 260);
+  text('G: ' + round(b), 110, 300);
+  text('B: ' + round(r), 110, 340);
+  translate(-100, -210);
+  
+//other textbox
+  stroke(0);
+  strokeWeight(2);
+  fill(r + 50, r + 50, b + 50, 100);
+  rect(300, 700, 160, 160);
+  textSize(40);
+  fill(250);
+  text('R: ' + round(r), 310, 750);
+  text('G: ' + round(g), 310, 790);
+  text('B: ' + round(b), 310, 830);
+  
+  
+  if(strokeBotton){
+    noStroke();
   }
+  
+/*tree
+  stroke(0);
+  strokeWeight(6);
+  let angle = branches.value();
+  translate(470, height/2 + 310);
+  
+  for(let i = 0; i < branches.value(); i = i + 10){
+    translate(i, 0);
+    branch(80 + i);
+  }
+*/ 
+  
+  
 }
 
 function mousePressed(){
-  if(mouseY < height/4 + 320 && mouseY > height/4 - 34){
-    electrons.push(new Electron(mouseX, mouseY));
-  }
-  if(dist(450,50,mouseX, mouseY) < 50){
-    if(shooting){
-      shooting = false;
-    }else{
-      shooting = true;
-    }
-  }else if(dist(520 ,50,mouseX, mouseY) < 50){
-    for(let i = 0; i < electrons.length; i++){
-      electrons.splice(i, 1);
-    }
+    r = random(0,255);
+    g = random(0,255);
+    b = random(0,255);
+}
+
+function branch(len) {
+  line(0, 0, 0, -len);
+  translate(0, -len);
+  
+  if (len > 10) {
+    push();
+    rotate(PI/5);
+    branch(len * 0.60);
+    pop();
+    push();
+    rotate(-PI/4);
+    branch(len * 0.67);
+    pop();
   }
 }
